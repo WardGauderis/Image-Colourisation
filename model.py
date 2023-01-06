@@ -1,4 +1,5 @@
 from torch import nn
+import torch
 
 
 class Model(nn.Module):
@@ -47,7 +48,21 @@ class Model(nn.Module):
             layers.append(nn.BatchNorm2d(out_channels))
         return nn.Sequential(*layers)
 
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = self.conv4(x)
+        x = self.conv5(x)
+        x = self.conv6(x)
+        x = self.conv7(x)
+        x = self.conv8(x)
+        x = self.distribution(x)
+        return self.output(x)
+
 
 if __name__ == "__main__":
     model = Model()
+    x = torch.zeros(8, 256, 256)
+    model(x)
     print(model)
