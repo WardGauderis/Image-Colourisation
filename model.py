@@ -33,8 +33,7 @@ class Model(nn.Module):
 
         self.distribution = nn.Conv2d(256, q_values, 1)
 
-        # self.optimiser = torch.optim.Adam(self.parameters(), lr=3.16e-5, betas=(0.9, 0.99), weight_decay=1e-3)
-        self.optimiser = torch.optim.Adam(self.parameters())
+        self.optimiser = torch.optim.Adam(self.parameters(), lr=3.16e-5, betas=(0.9, 0.99), weight_decay=1e-3)
 
     @staticmethod
     def conv_layer(depth: int, in_channels: int, out_channels: int, stride: Union[float, int] = 1, dilation: int = 1,
@@ -58,7 +57,7 @@ class Model(nn.Module):
 
     @staticmethod
     def normalise(x):
-        return x - 50  # TODO divide
+        return (x / 50) - 1
 
     def forward(self, x):
         x = self.normalise(x)
@@ -75,10 +74,6 @@ class Model(nn.Module):
 
     @staticmethod
     def criterion(y_pred: torch.Tensor, y: torch.Tensor) -> float:
-        # norm = y.clone()
-        # norm[norm != 0] = torch.log(norm[norm != 0])  # TODO check
-
-        # return -torch.sum((nn.functional.log_softmax(y_pred, dim=1) - norm) * y) / y.shape[0]
         return -torch.sum((nn.functional.log_softmax(y_pred, dim=1)) * y) / (y.shape[0] * y.shape[2] * y.shape[3])
 
     def save(self):
