@@ -10,13 +10,16 @@ from skimage import color
 
 
 class Model(nn.Module):
-    def __init__(self, q_values: int, h: callable, h_inv: callable):
+    def __init__(self, name: str, q_values: int, h: callable, h_inv: callable, criterion: callable):
         super(Model, self).__init__()
+        self.name = name
         self.q_values = q_values
         self.h = h
         self.h_inv = h_inv
         self.train_loss = []
         self.val_loss = []
+
+        self.criterion = criterion
 
         self.epochs = 0
 
@@ -73,8 +76,13 @@ class Model(nn.Module):
         return x
 
     @staticmethod
-    def criterion(y_pred: torch.Tensor, y: torch.Tensor) -> float:
+    def cross_entropy(y_pred: torch.Tensor, y: torch.Tensor) -> float:
         return -torch.sum((nn.functional.log_softmax(y_pred, dim=1)) * y) / (y.shape[0] * y.shape[2] * y.shape[3])
+
+    @staticmethod
+    def cross_entropy_rebalanced(y_pred: torch.Tensor, y: torch.Tensor, v: callable) -> float:
+        weights = v(y)
+        return -torch.sum((nn.functional.log_softmax(y_pred, dim=1)) * y * weights) / (y.shape[0] * y.shape[2] * y.shape[3])
 
     def save(self):
         torch.save({
@@ -82,8 +90,8 @@ class Model(nn.Module):
             "model_state_dict": self.state_dict(),
             "optimizer_state_dict": self.optimiser.state_dict(),
             "train_loss": self.train_loss,
-            "val_loss": self.val_loss
-        }, f"CHECKPOINTS/{self.epochs}.pt")
+            "val_loss": self.val_loss,
+        }, f"CHECKPOINTS/{self.name}_{self.epochs}.pt")
 
     def load(self, name: str):
         checkpoint = torch.load(f"CHECKPOINTS/{name}.pt")
@@ -113,7 +121,7 @@ class Model(nn.Module):
     def lab_to_rgb(image: torch.Tensor) -> np.ndarray:
         return np.clip(color.lab2rgb(image.cpu().permute(0, 2, 3, 1)), 0, 1)
 
-    def plot(self):
+    def plot(self, show=True):
         batches = np.linspace(0, self.epochs, len(self.train_loss))
         plt.plot(batches, self.train_loss, label="Training loss")
 
@@ -123,8 +131,11 @@ class Model(nn.Module):
         plt.legend()
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
-        plt.savefig(f"training.png")
-        plt.show()
+        plt.savefig(f"{self.name}.png", dpi=300)
+        if show:
+            plt.show()
+        else:
+            plt.close()
 
     def train_model(self, train: torch.utils.data.DataLoader, val: torch.utils.data.DataLoader, epochs: int):
         self.train()
@@ -161,17 +172,15 @@ class Model(nn.Module):
                 epoch_val_loss /= len(val)
             self.val_loss.append(epoch_val_loss)
 
-            print("#######################################################################")
             print(
                 f"Epoch: {self.epochs}, Train loss: {epoch_train_loss}, Validation loss: {epoch_val_loss}, Time: {datetime.now() - time}")
-            print("#######################################################################")
 
             self.epochs += 1
 
-            if self.epochs % 10 == 1:
+            if self.epochs % 10 == 0:
                 self.save()
 
-        self.plot()
+        self.plot(show=False)
 
     def test(self, test: torch.utils.data.DataLoader):
         entropy_loss = 0.0
@@ -199,7 +208,7 @@ class Model(nn.Module):
                     rgb = batch_rgb[i]
                     rmse += MSE(pred_rgb, rgb)
                     psnr += PSNR(pred_rgb, rgb, data_range=1)
-                    ssim += SSIM(pred_rgb, rgb, datarange=1, channel_axis=2)
+                    ssim += SSIM(pred_rgb, rgb, datarange=1, channel_axis=2, multichannel=True)
                 rmse /= batch.shape[0]
                 psnr /= batch.shape[0]
                 ssim /= batch.shape[0]
@@ -207,8 +216,6 @@ class Model(nn.Module):
                 rmse_loss += rmse
                 psnr_metric += psnr
                 ssim_metric += ssim
-
-                # print(f"Batch: {i}, Entropy: {entropy}, RMSE: {np.sqrt(rmse)}, PSNR: {psnr}, SSIM: {ssim}")
 
             entropy_loss /= len(test)
             rmse_loss /= len(test)
@@ -220,8 +227,6 @@ class Model(nn.Module):
             print(f"RMSE Loss: {rmse_loss}")
             print(f"PSNR: {psnr_metric}")
             print(f"SSIM: {ssim_metric}")
-
-            return entropy_loss, rmse_loss, psnr_metric, ssim_metric
 
     def predict(self, image: torch.Tensor) -> torch.Tensor:
         self.eval()
