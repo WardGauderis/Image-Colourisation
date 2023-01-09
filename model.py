@@ -172,10 +172,10 @@ class Model(nn.Module):
                 epoch_val_loss /= len(val)
             self.val_loss.append(epoch_val_loss)
 
+            self.epochs += 1
+
             print(
                 f"Epoch: {self.epochs}, Train loss: {epoch_train_loss}, Validation loss: {epoch_val_loss}, Time: {datetime.now() - time}")
-
-            self.epochs += 1
 
             if self.epochs % 10 == 0:
                 self.save()
@@ -197,7 +197,7 @@ class Model(nn.Module):
 
                 batch_pred = self.decode(l, z_pred)
 
-                entropy = self.criterion(z_pred, z).item()
+                entropy = self.cross_entropy(z_pred, z).item()
                 entropy_loss += entropy
 
                 rmse, psnr, ssim = 0, 0, 0
