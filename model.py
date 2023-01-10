@@ -13,7 +13,6 @@ class Model(nn.Module):
     def __init__(self, name: str, q_values: int, h: callable, h_inv: callable, criterion: callable):
         super(Model, self).__init__()
         self.name = name
-        self.q_values = q_values
         self.h = h
         self.h_inv = h_inv
         self.train_loss = []
@@ -104,10 +103,8 @@ class Model(nn.Module):
     def encode(self, image: torch.Tensor) -> (torch.Tensor, torch.Tensor):
         image = image.to(self.device)
         l = image[:, :1, :, :]
-
         shape = (l.shape[-2] // 4, l.shape[-1] // 4)
         ab = torch.nn.functional.interpolate(image[:, 1:, :, :], size=shape, mode="bilinear")
-
         z = self.h_inv(ab)
         return l, z
 
@@ -147,10 +144,12 @@ class Model(nn.Module):
 
             epoch_train_loss = 0
             for i, batch in enumerate(train):
-                l, z = self.encode(batch)
                 self.optimiser.zero_grad()
+
+                l, z = self.encode(batch)
                 z_pred = self(l)
                 loss = self.criterion(z_pred, z)
+
                 loss.backward()
                 self.optimiser.step()
 
@@ -183,48 +182,45 @@ class Model(nn.Module):
         self.plot(show=False)
 
     def test(self, test: torch.utils.data.DataLoader):
-        entropy_loss = 0.0
-        rmse_loss = 0.0
+        rmse_ab_metric = 0.0
+        rmse_metric = 0.0
         psnr_metric = 0.0
         ssim_metric = 0.0
 
         with torch.no_grad():
             self.eval()
             for i, batch in enumerate(test):
-                l, z = self.encode(batch)
+                batch_pred = self.predict(batch)
 
-                z_pred = self(l)
-
-                batch_pred = self.decode(l, z_pred)
-
-                entropy = self.cross_entropy(z_pred, z).item()
-                entropy_loss += entropy
-
-                rmse, psnr, ssim = 0, 0, 0
                 batch_rgb = self.lab_to_rgb(batch)
                 batch_pred_rgb = self.lab_to_rgb(batch_pred)
+
+                rmse, rmse_ab, psnr, ssim = 0, 0, 0, 0
                 for i in range(batch.shape[0]):
+                    pred_ab = batch_pred[i, 1:, :, :].cpu().numpy()
+                    ab = batch[i, 1:, :, :].cpu().numpy()
+
+                    rmse_ab += np.sqrt(MSE(pred_ab, ab))
+
                     pred_rgb = batch_pred_rgb[i]
                     rgb = batch_rgb[i]
-                    rmse += MSE(pred_rgb, rgb)
-                    psnr += PSNR(pred_rgb, rgb, data_range=1)
+
+                    rmse += np.sqrt(MSE(pred_rgb, rgb))
+                    psnr += PSNR(rgb, pred_rgb, data_range=1)
                     ssim += SSIM(pred_rgb, rgb, datarange=1, channel_axis=2, multichannel=True)
-                rmse /= batch.shape[0]
-                psnr /= batch.shape[0]
-                ssim /= batch.shape[0]
 
-                rmse_loss += rmse
-                psnr_metric += psnr
-                ssim_metric += ssim
+                rmse_ab_metric += rmse_ab / batch.shape[0]
+                rmse_metric += rmse / batch.shape[0]
+                psnr_metric += psnr / batch.shape[0]
+                ssim_metric += ssim / batch.shape[0]
 
-            entropy_loss /= len(test)
-            rmse_loss /= len(test)
-            rmse_loss = np.sqrt(rmse_loss)
+            rmse_ab_metric /= len(test)
+            rmse_metric /= len(test)
             psnr_metric /= len(test)
             ssim_metric /= len(test)
 
-            print(f"Entropy Loss: {entropy_loss}")
-            print(f"RMSE Loss: {rmse_loss}")
+            print(f"RMSE AB: {rmse_ab_metric}")
+            print(f"RMSE: {rmse_metric}")
             print(f"PSNR: {psnr_metric}")
             print(f"SSIM: {ssim_metric}")
 
