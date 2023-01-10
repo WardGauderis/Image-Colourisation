@@ -479,6 +479,19 @@ Epoch: 100, Train loss: 6.006037122553045, Validation loss: 5.9910149574279785, 
 euclidean
 100
 
+RMSE AB: 17.120708880207005
+RMSE: 0.101509482593413
+PSNR: 20.544907623033517
+SSIM: 0.9045052400789165
+
+RMSE AB: 17.540858791379385
+RMSE: 0.1036191236118834
+PSNR: 20.459893705662797
+SSIM: 0.900057495391747
+
+euclidean
+100
+
 RMSE AB: 12.950729704051584
 RMSE: 0.07774079348351866
 PSNR: 23.56791218154787
@@ -590,7 +603,6 @@ Epoch: 98, Train loss: 0.017755458639426666, Validation loss: 0.0160376836678811
 Epoch: 99, Train loss: 0.018237039023502308, Validation loss: 0.01649876351335219, Time: 0:01:14.789664
 Epoch: 100, Train loss: 0.01833139749413187, Validation loss: 0.01706808539373534, Time: 0:01:15.287498
 
-# TODO: architecture
 # TODO: big one + onehot rebalanced
 
 # TODO: argmax
@@ -601,3 +613,6 @@ Epoch: 100, Train loss: 0.01833139749413187, Validation loss: 0.0170680853937353
 # grass/ocean mistaken sometimes
 # Cars multiple colors: harder, SSIM/PSNR can't acknowledge multiple are plausible
 # First learn grey then color
+# Simplified learns faster
+
+n06255081 n02739889 n03351262 n02691156 n02918964 n00449695 n00449517 n00449295  n00451635 n00451563

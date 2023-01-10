@@ -23,6 +23,7 @@ class Model(nn.Module):
         self.epochs = 0
 
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.to(self.device)
 
         self.conv1 = self.conv_layer(2, 1, 64, stride=2)
         self.conv2 = self.conv_layer(2, 64, 128, stride=2)
