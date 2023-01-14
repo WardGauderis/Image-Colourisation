@@ -216,7 +216,7 @@ class Model(nn.Module):
         plt.legend()
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
-        plt.savefig(f"GRAPHS/{self.name}.png", dpi=300, bbox_inches="tight", pad_inches=0, transparent=True)
+        plt.savefig(f"GRAPHS/{self.name}.png", dpi=300, bbox_inches="tight", pad_inches=0)
         if show:
             plt.show()
         else:
