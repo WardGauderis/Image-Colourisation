@@ -34,7 +34,7 @@ But the actual model code is organised in classes in the accompanying Python fil
   when running the notebook.
 - `GRAPHS`: The directory containing all made visualizations.
 - `PRECALCULATED`: The directory containing all precalculated data: the mapping between Q and AB values and multiple
-distributions over the Q values.
+  distributions over the Q values.
 
 # train patches to avoid overfitting
 
