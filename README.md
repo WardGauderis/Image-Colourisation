@@ -36,10 +36,6 @@ But the actual model code is organised in classes in the accompanying Python fil
 - `PRECALCULATED`: The directory containing all precalculated data: the mapping between Q and AB values and multiple
 distributions over the Q values.
 
-# TODO plot model comparison
-
-# TODO plot temperature
-
 # train patches to avoid overfitting
 
 # report: sky and inside alwyas
