@@ -5,9 +5,13 @@ from model import Model
 
 
 class SimplifiedModel(Model):
+    """
+    Simplified colorization model with half the amount of parameters, derived from the default model
+    """
     def __init__(self, q_values: int, h: callable, h_inv: callable, criterion: callable):
         super(SimplifiedModel, self).__init__("simplified", q_values, h, h_inv, criterion)
 
+        # Reduce the maximum depth of a layer to 2 and reduce the maximum number of channels to 416
         self.conv1 = self.conv_layer(2, 1, 64, stride=2)
         self.conv2 = self.conv_layer(2, 64, 128, stride=2)
         self.conv3 = self.conv_layer(2, 128, 256, stride=2)
