@@ -24,9 +24,11 @@ But the actual model code is organised in classes in the accompanying Python fil
 - `euclidean_model.py`: The Euclidean Model class with a different loss function
 - `simplified_model.py`: The Simplified Model class with fewer parameters
 - `requirements.txt`: The required packages to run the notebook
-- `CHECKPOINTS`: The directory containing the final checkpoints of the trained models. In total 9 models were trained
-  we try to include the most important models depending on the allowed upload file size.
-- `DATA: The directory containing the data used for experimentation. The dataset is not included but is
+- `CHECKPOINTS`: The directory containing the final checkpoints of the trained models. In total 9 models were trained,
+but due to a conflict with GitHub's Large File Storage limit, the model weights are now being held hostage by GitHub
+until we pay for more storage space. However, we do include the last checkpoint of the *Simplified final* model,
+which we were able to recover.
+- `DATA`: The directory containing the data used for experimentation. The dataset is not included but is
   downloaded automatically when running the notebook.
 - `DATA_FINAL`: The directory containing the data used for training the final models. The dataset is not included but is
   downloaded automatically when running the notebook.
