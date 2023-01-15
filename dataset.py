@@ -59,7 +59,7 @@ class Dataset(torch.utils.data.Dataset):
         except:
             return None
 
-
+# When loading in the dataset, it is possible some images are non-RGB and thus we filter them out with the following colate function.
 def collate_fn(batch):
     """
     Collate function for DataLoader that filters out None values
