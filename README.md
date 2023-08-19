@@ -18,7 +18,7 @@ But the actual model code is organised in classes in the accompanying Python fil
 
 **Overview of the directory structure:**
 
-- `olourisation.ipynb`: The Jupiter Notebook
+- `colourisation.ipynb`: The Jupiter Notebook
 - `dataset.py`: The Dataset class
 - `model.py`: The Model class
 - `euclidean_model.py`: The Euclidean Model class with a different loss function
